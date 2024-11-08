@@ -1,86 +1,181 @@
-1. **Use Inline Code Blocks for Equations**: You can use inline or block code formatting to make the equations more readable, although this won't render them as nicely as LaTeX. This works for simple equations but may be limited for more complex formulas.
-
-2. **Convert LaTeX Equations to Images**: You can convert the LaTeX equations into images and include them in your README. This way, they’ll render clearly, but the downside is they won’t be editable as text.
-
-3. **Use GitHub Pages or Jupyter Notebooks**: If you need full LaTeX support, you could use GitHub Pages with Jekyll to host the documentation as a website or create a Jupyter Notebook (`.ipynb`) that supports LaTeX equations and then link to it from your README.
-
-Here’s an example of how to adapt the equations to GitHub Markdown for your README.
-
----
-
 # Mixture-of-Transformers (MoT) Model
 
 ## Introduction
 
-The **Mixture-of-Transformers (MoT)** model is a multimodal architecture designed to process and integrate information from multiple data types, such as text, images, and speech. By using unique transformer layers for each modality and a shared global attention mechanism, MoT captures both unique modality-specific patterns and cross-modal interactions.
+The **Mixture-of-Transformers (MoT)** model is a multimodal architecture designed to process and integrate information from various modalities, such as text, images, and speech. By employing modality-specific transformer layers combined with a shared global attention mechanism, the MoT model efficiently captures both unique modality-specific patterns and cross-modal interactions.
 
 ## Architecture Overview
 
+The MoT model architecture includes several critical components:
+
+1. **Modality-Specific Transformer Layers**: These separate transformer encoder layers process each modality independently, allowing the model to learn distinct representations for each modality.
+2. **Shared Global Self-Attention Layer**: This global attention mechanism aggregates information across modalities to capture dependencies between them.
+3. **Positional Encoding**: Sinusoidal positional encodings are added to input embeddings to retain sequence order information.
+4. **Modality Embeddings**: Learnable embeddings indicate the modality of each input to the model.
+
+## Mathematical Formulation
+
 ### Transformer Encoder Layer
 
-Each encoder layer includes:
+Each transformer encoder layer includes a multi-head self-attention mechanism followed by a position-wise feed-forward network (FFN). MoT extends this architecture by adding modality-specific layers for each modality.
 
-- **Multi-Head Self-Attention**: Calculates weights for each input position based on relevance to others, enabling the model to focus on key parts of the input sequence.
-- **Position-Wise Feed-Forward Network (FFN)**: Each position passes through a feed-forward network to add complexity and depth.
+#### Multi-Head Self-Attention
 
-#### Self-Attention Calculation
+In a given modality \( m \), the self-attention mechanism computes a weighted sum of value vectors. The weights are based on the compatibility between the query and key vectors.
 
-For a given modality `m`, we compute the self-attention as follows:
+1. **Linear Projections**:  
+   The input sequence \( X^{(m)} \in \mathbb{R}^{T \times d_{\text{model}}} \) is projected into query \( Q^{(m)} \), key \( K^{(m)} \), and value \( V^{(m)} \) matrices:
 
-1. **Linear Projections**: The input sequence \( X^{(m)} \) is projected to `query (Q)`, `key (K)`, and `value (V)` matrices:
+   $$
+   \begin{aligned}
+   Q^{(m)} &= X^{(m)} W_Q^{(m)}, \\
+   K^{(m)} &= X^{(m)} W_K^{(m)}, \\
+   V^{(m)} &= X^{(m)} W_V^{(m)},
+   \end{aligned}
+   $$
 
-   ```
-   Q^(m) = X^(m) * W_Q^(m)
-   K^(m) = X^(m) * W_K^(m)
-   V^(m) = X^(m) * W_V^(m)
-   ```
+   where \( W_Q^{(m)}, W_K^{(m)}, W_V^{(m)} \in \mathbb{R}^{d_{\text{model}} \times d_{\text{model}}} \) are modality-specific projection matrices.
 
-2. **Scaled Dot-Product Attention**:
+2. **Scaled Dot-Product Attention**:  
+   The attention scores are calculated as:
 
-   ```
-   Attention(Q^(m), K^(m), V^(m)) = softmax((Q^(m) * K^(m).T) / sqrt(d_k)) * V^(m)
-   ```
+   $$
+   \text{Attention}(Q^{(m)}, K^{(m)}, V^{(m)}) = \text{softmax}\left( \frac{Q^{(m)} {K^{(m)}}^\top}{\sqrt{d_k}} \right) V^{(m)},
+   $$
 
-   where `d_k` is the dimensionality of each head.
+   where \( d_k = \frac{d_{\text{model}}}{h} \) is the dimensionality of each head, and \( h \) represents the number of heads.
 
-3. **Multi-Head Attention**: Concatenate and project the output of each head:
+3. **Multi-Head Attention**:  
+   The outputs from each head are concatenated:
 
-   ```
-   MultiHead(Q^(m), K^(m), V^(m)) = Concat(head_1, ..., head_h) * W_O^(m)
-   ```
+   $$
+   \begin{aligned}
+   \text{MultiHead}(Q^{(m)}, K^{(m)}, V^{(m)}) &= \text{Concat}(\text{head}_1, \dots, \text{head}_h) W_O^{(m)}, \\
+   \text{where } \text{head}_i &= \text{Attention}(Q_i^{(m)}, K_i^{(m)}, V_i^{(m)}),
+   \end{aligned}
+   $$
 
-#### Position-Wise Feed-Forward Network (FFN)
+   and \( W_O^{(m)} \in \mathbb{R}^{d_{\text{model}} \times d_{\text{model}}} \) is a modality-specific output projection matrix.
 
-Each position in the sequence goes through a feed-forward network:
+#### Position-Wise Feed-Forward Network
 
-   ```
-   FFN(X^(m)) = GELU(X^(m) * W_1^(m) + b_1^(m)) * W_2^(m) + b_2^(m)
-   ```
+Each position in the sequence goes through a fully connected feed-forward network:
 
-#### Modality and Positional Embeddings
+$$
+\begin{aligned}
+\text{FFN}(X^{(m)}) &= \sigma\left( X^{(m)} W_1^{(m)} + b_1^{(m)} \right) W_2^{(m)} + b_2^{(m)},
+\end{aligned}
+$$
 
-To add modality and positional information:
+where:
 
-1. **Modality Embeddings**: Each modality `m` has an embedding `E_mod^(m)`, which is added to the input:
+- \( W_1^{(m)} \in \mathbb{R}^{d_{\text{model}} \times d_{\text{ff}}} \),
+- \( W_2^{(m)} \in \mathbb{R}^{d_{\text{ff}} \times d_{\text{model}}} \),
+- \( b_1^{(m)} \in \mathbb{R}^{d_{\text{ff}}} \),
+- \( b_2^{(m)} \in \mathbb{R}^{d_{\text{model}}} \),
+- \( \sigma \) is an activation function, such as GELU.
 
-   ```
-   X^(m) = X^(m) + E_mod^(m)
-   ```
+#### Layer Normalization and Residual Connections
 
-2. **Positional Encoding**: Added to retain sequence information:
+Layer normalization and residual connections are used for training stability:
 
-   ```
-   X^(m) = X^(m) + E_pos
-   ```
+1. **Pre-Norm Architecture**:
+
+   $$
+   \begin{aligned}
+   X'^{(m)} &= X^{(m)} + \text{MultiHead}\left( \text{LayerNorm}(X^{(m)}) \right), \\
+   X''^{(m)} &= X'^{(m)} + \text{FFN}\left( \text{LayerNorm}(X'^{(m)}) \right).
+   \end{aligned}
+   $$
+
+### Modality Embeddings and Positional Encoding
+
+Modality embeddings and positional encoding are added to the input sequences:
+
+1. **Modality Embeddings**:  
+   Each modality \( m \) has a learnable embedding \( E_{\text{mod}}^{(m)} \in \mathbb{R}^{1 \times d_{\text{model}}} \) added to the input:
+
+   $$
+   X^{(m)} = X^{(m)} + E_{\text{mod}}^{(m)}.
+   $$
+
+2. **Positional Encoding**:  
+   Positional encodings \( E_{\text{pos}} \in \mathbb{R}^{T \times d_{\text{model}}} \) are used to encode sequence order information:
+
+   $$
+   X^{(m)} = X^{(m)} + E_{\text{pos}}.
+   $$
+
+   Using sinusoidal functions, they are computed as follows:
+
+   $$
+   \begin{aligned}
+   E_{\text{pos}}(pos, 2i) &= \sin\left( \frac{pos}{10000^{2i/d_{\text{model}}}} \right), \\
+   E_{\text{pos}}(pos, 2i+1) &= \cos\left( \frac{pos}{10000^{2i/d_{\text{model}}}} \right),
+   \end{aligned}
+   $$
+
+   where \( pos \) represents the position and \( i \) is the dimension index.
+
+### Shared Global Self-Attention Layer
+
+After passing through modality-specific layers, representations are refined using a shared global self-attention mechanism that captures cross-modal dependencies.
+
+1. **Global Multi-Head Attention**:  
+   Operating on the modality-specific outputs \( X''^{(m)} \), the global attention is applied as follows:
+
+   $$
+   \begin{aligned}
+   \hat{X}^{(m)} &= X''^{(m)} + \text{GlobalMultiHead}\left( \text{LayerNorm}(X''^{(m)}) \right),
+   \end{aligned}
+   $$
+
+   where the global attention mechanism uses shared projection matrices across modalities: \( W_Q^{\text{global}}, W_K^{\text{global}}, W_V^{\text{global}} \), and \( W_O^{\text{global}} \).
+
+### Overall Forward Pass
+
+For each modality \( m \), the forward pass proceeds as follows:
+
+1. **Input Embeddings**:
+
+   $$
+   X^{(m)} = \text{Input}^{(m)} + E_{\text{mod}}^{(m)} + E_{\text{pos}}.
+   $$
+
+2. **Modality-Specific Layers**:
+
+   For each layer \( l = 1, \dots, L \):
+
+   $$
+   \begin{aligned}
+   X_l'^{(m)} &= X_{l-1}^{(m)} + \text{MultiHead}^{(m)}\left( \text{LayerNorm}(X_{l-1}^{(m)}) \right), \\
+   X_l^{(m)} &= X_l'^{(m)} + \text{FFN}^{(m)}\left( \text{LayerNorm}(X_l'^{(m)}) \right).
+   \end{aligned}
+   $$
+
+3. **Global Attention Layer**:
+
+   $$
+   \hat{X}^{(m)} = X_L^{(m)} + \text{GlobalMultiHead}\left( \text{LayerNorm}(X_L^{(m)}) \right).
+   $$
+
+4. **Output**:  
+   The final output \( \hat{X}^{(m)} \) represents the processed sequence for modality \( m \), capturing both modality-specific and cross-modal information.
 
 ---
 
-## Global Self-Attention Layer
+### Notes on Mathematical Formatting:
 
-After modality-specific processing, representations pass through a global self-attention layer to capture cross-modal dependencies.
+- **Display Math**: All major equations and multi-line formulas are enclosed within `$$` to ensure they are displayed prominently and centered in Markdown viewers that support LaTeX.
+  
+- **Inline Math**: For simpler expressions within sentences, single `$` symbols are used.
 
-1. **Global Multi-Head Attention**:
+- **Alignment**: The `aligned` environment is used within `$$` to properly align multi-line equations.
 
-   ```
-   X_hat^(m) = X_L^(m) + GlobalMultiHead(LayerNorm(X_L^(m)))
-   ```
+- **Consistency**: Ensured consistent use of LaTeX commands and notation throughout the document for clarity and readability.
+
+### Rendering Tips:
+
+- **Markdown Renderer**: Ensure that the Markdown renderer you are using supports LaTeX. Platforms like GitHub, GitLab, and many documentation tools (e.g., Jupyter Notebooks, MkDocs with appropriate plugins) support LaTeX rendering.
+
+- **Escaping Characters**: If any issues arise with special characters, consider escaping them or using raw LaTeX blocks.
