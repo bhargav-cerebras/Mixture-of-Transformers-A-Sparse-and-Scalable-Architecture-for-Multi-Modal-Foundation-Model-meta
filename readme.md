@@ -21,11 +21,11 @@ Each transformer encoder layer includes a multi-head self-attention mechanism fo
 
 #### Multi-Head Self-Attention
 
-In a given modality \( m \), the self-attention mechanism computes a weighted sum of value vectors. The weights are based on the compatibility between the query and key vectors.
+In a given modality $m$, the self-attention mechanism computes a weighted sum of value vectors. The weights are based on the compatibility between the query and key vectors.
 
 1. **Linear Projections**
 
-   The input sequence \( X^{(m)} \in \mathbb{R}^{T \times d_{\mathrm{model}}} \) is projected into query \( Q^{(m)} \), key \( K^{(m)} \), and value \( V^{(m)} \) matrices:
+   The input sequence $X^{(m)} \in \mathbb{R}^{T \times d_{\mathrm{model}}}$ is projected into query $Q^{(m)}$, key $K^{(m)}$, and value $V^{(m)}$ matrices:
 
    $$
    \begin{aligned}
@@ -35,7 +35,7 @@ In a given modality \( m \), the self-attention mechanism computes a weighted su
    \end{aligned}
    $$
 
-   where \( W_Q^{(m)}, W_K^{(m)}, W_V^{(m)} \in \mathbb{R}^{d_{\mathrm{model}} \times d_{\mathrm{model}}} \) are modality-specific projection matrices.
+   where $W_Q^{(m)}, W_K^{(m)}, W_V^{(m)} \in \mathbb{R}^{d_{\mathrm{model}} \times d_{\mathrm{model}}}$ are modality-specific projection matrices.
 
 2. **Scaled Dot-Product Attention**
 
@@ -45,7 +45,7 @@ In a given modality \( m \), the self-attention mechanism computes a weighted su
    \text{Attention}(Q^{(m)}, K^{(m)}, V^{(m)}) = \text{softmax}\left( \dfrac{Q^{(m)} {K^{(m)}}^\top}{\sqrt{d_k}} \right) V^{(m)},
    $$
 
-   where \( d_k = \dfrac{d_{\mathrm{model}}}{h} \) is the dimensionality of each head, and \( h \) represents the number of heads.
+   where $d_k = \dfrac{d_{\mathrm{model}}}{h}$ is the dimensionality of each head, and $h$ represents the number of heads.
 
 3. **Multi-Head Attention**
 
@@ -58,7 +58,7 @@ In a given modality \( m \), the self-attention mechanism computes a weighted su
    \end{aligned}
    $$
 
-   and \( W_O^{(m)} \in \mathbb{R}^{d_{\mathrm{model}} \times d_{\mathrm{model}}} \) is a modality-specific output projection matrix.
+   and $W_O^{(m)} \in \mathbb{R}^{d_{\mathrm{model}} \times d_{\mathrm{model}}}$ is a modality-specific output projection matrix.
 
 #### Position-Wise Feed-Forward Network
 
@@ -70,11 +70,11 @@ $$
 
 where:
 
-- \( W_1^{(m)} \in \mathbb{R}^{d_{\mathrm{model}} \times d_{\mathrm{ff}}} \),
-- \( W_2^{(m)} \in \mathbb{R}^{d_{\mathrm{ff}} \times d_{\mathrm{model}}} \),
-- \( b_1^{(m)} \in \mathbb{R}^{d_{\mathrm{ff}}} \),
-- \( b_2^{(m)} \in \mathbb{R}^{d_{\mathrm{model}}} \),
-- \( \sigma \) is an activation function, such as GELU.
+- $W_1^{(m)} \in \mathbb{R}^{d_{\mathrm{model}} \times d_{\mathrm{ff}}}$,
+- $W_2^{(m)} \in \mathbb{R}^{d_{\mathrm{ff}} \times d_{\mathrm{model}}}$,
+- $b_1^{(m)} \in \mathbb{R}^{d_{\mathrm{ff}}}$,
+- $b_2^{(m)} \in \mathbb{R}^{d_{\mathrm{model}}}$,
+- $\sigma$ is an activation function, such as GELU.
 
 #### Layer Normalization and Residual Connections
 
@@ -95,7 +95,7 @@ Modality embeddings and positional encoding are added to the input sequences:
 
 1. **Modality Embeddings**
 
-   Each modality \( m \) has a learnable embedding \( E_{\mathrm{mod}}^{(m)} \in \mathbb{R}^{1 \times d_{\mathrm{model}}} \) added to the input:
+   Each modality $m$ has a learnable embedding $E_{\mathrm{mod}}^{(m)} \in \mathbb{R}^{1 \times d_{\mathrm{model}}}$ added to the input:
 
    $$
    X^{(m)} = X^{(m)} + E_{\mathrm{mod}}^{(m)}.
@@ -103,7 +103,7 @@ Modality embeddings and positional encoding are added to the input sequences:
 
 2. **Positional Encoding**
 
-   Positional encodings \( E_{\mathrm{pos}} \in \mathbb{R}^{T \times d_{\mathrm{model}}} \) are used to encode sequence order information:
+   Positional encodings $E_{\mathrm{pos}} \in \mathbb{R}^{T \times d_{\mathrm{model}}}$ are used to encode sequence order information:
 
    $$
    X^{(m)} = X^{(m)} + E_{\mathrm{pos}}.
@@ -118,7 +118,7 @@ Modality embeddings and positional encoding are added to the input sequences:
    \end{aligned}
    $$
 
-   where \( \text{pos} \) represents the position index and \( i \) is the dimension index.
+   where $\text{pos}$ represents the position index and $i$ is the dimension index.
 
 ### Shared Global Self-Attention Layer
 
@@ -126,17 +126,17 @@ After passing through modality-specific layers, representations are refined usin
 
 1. **Global Multi-Head Attention**
 
-   Operating on the modality-specific outputs \( X''^{(m)} \), the global attention is applied as follows:
+   Operating on the modality-specific outputs $X''^{(m)}$, the global attention is applied as follows:
 
    $$
    \hat{X}^{(m)} = X''^{(m)} + \text{GlobalMultiHead}\left( \mathrm{LayerNorm}\left( X''^{(m)} \right) \right),
    $$
 
-   where the global attention mechanism uses shared projection matrices across modalities: \( W_Q^{\mathrm{global}}, W_K^{\mathrm{global}}, W_V^{\mathrm{global}} \), and \( W_O^{\mathrm{global}} \).
+   where the global attention mechanism uses shared projection matrices across modalities: $W_Q^{\mathrm{global}}, W_K^{\mathrm{global}}, W_V^{\mathrm{global}}$, and $W_O^{\mathrm{global}}$.
 
 ### Overall Forward Pass
 
-For each modality \( m \), the forward pass proceeds as follows:
+For each modality $m$, the forward pass proceeds as follows:
 
 1. **Input Embeddings**
 
@@ -146,7 +146,7 @@ For each modality \( m \), the forward pass proceeds as follows:
 
 2. **Modality-Specific Layers**
 
-   For each layer \( l = 1, \dots, L \):
+   For each layer $l = 1, \dots, L$:
 
    $$
    \begin{aligned}
@@ -163,4 +163,4 @@ For each modality \( m \), the forward pass proceeds as follows:
 
 4. **Output**
 
-   The final output \( \hat{X}^{(m)} \) represents the processed sequence for modality \( m \), capturing both modality-specific and cross-modal information.
+   The final output $\hat{X}^{(m)}$ represents the processed sequence for modality $m$, capturing both modality-specific and cross-modal information.
