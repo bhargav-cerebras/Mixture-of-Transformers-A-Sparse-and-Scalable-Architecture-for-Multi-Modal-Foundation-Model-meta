@@ -1,3 +1,4 @@
+
 # Mixture-of-Transformers (MoT) Model
 
 ## Introduction
@@ -23,7 +24,8 @@ Each transformer encoder layer includes a multi-head self-attention mechanism fo
 
 In a given modality \( m \), the self-attention mechanism computes a weighted sum of value vectors. The weights are based on the compatibility between the query and key vectors.
 
-1. **Linear Projections**:  
+1. **Linear Projections**
+
    The input sequence \( X^{(m)} \in \mathbb{R}^{T \times d_{\text{model}}} \) is projected into query \( Q^{(m)} \), key \( K^{(m)} \), and value \( V^{(m)} \) matrices:
 
    $$
@@ -36,7 +38,8 @@ In a given modality \( m \), the self-attention mechanism computes a weighted su
 
    where \( W_Q^{(m)}, W_K^{(m)}, W_V^{(m)} \in \mathbb{R}^{d_{\text{model}} \times d_{\text{model}}} \) are modality-specific projection matrices.
 
-2. **Scaled Dot-Product Attention**:  
+2. **Scaled Dot-Product Attention**
+
    The attention scores are calculated as:
 
    $$
@@ -45,7 +48,8 @@ In a given modality \( m \), the self-attention mechanism computes a weighted su
 
    where \( d_k = \frac{d_{\text{model}}}{h} \) is the dimensionality of each head, and \( h \) represents the number of heads.
 
-3. **Multi-Head Attention**:  
+3. **Multi-Head Attention**
+
    The outputs from each head are concatenated:
 
    $$
@@ -62,9 +66,7 @@ In a given modality \( m \), the self-attention mechanism computes a weighted su
 Each position in the sequence goes through a fully connected feed-forward network:
 
 $$
-\begin{aligned}
-\text{FFN}(X^{(m)}) &= \sigma\left( X^{(m)} W_1^{(m)} + b_1^{(m)} \right) W_2^{(m)} + b_2^{(m)},
-\end{aligned}
+\text{FFN}(X^{(m)}) = \sigma\left( X^{(m)} W_1^{(m)} + b_1^{(m)} \right) W_2^{(m)} + b_2^{(m)},
 $$
 
 where:
@@ -79,7 +81,7 @@ where:
 
 Layer normalization and residual connections are used for training stability:
 
-1. **Pre-Norm Architecture**:
+1. **Pre-Norm Architecture**
 
    $$
    \begin{aligned}
@@ -92,14 +94,16 @@ Layer normalization and residual connections are used for training stability:
 
 Modality embeddings and positional encoding are added to the input sequences:
 
-1. **Modality Embeddings**:  
+1. **Modality Embeddings**
+
    Each modality \( m \) has a learnable embedding \( E_{\text{mod}}^{(m)} \in \mathbb{R}^{1 \times d_{\text{model}}} \) added to the input:
 
    $$
    X^{(m)} = X^{(m)} + E_{\text{mod}}^{(m)}.
    $$
 
-2. **Positional Encoding**:  
+2. **Positional Encoding**
+
    Positional encodings \( E_{\text{pos}} \in \mathbb{R}^{T \times d_{\text{model}}} \) are used to encode sequence order information:
 
    $$
@@ -121,13 +125,12 @@ Modality embeddings and positional encoding are added to the input sequences:
 
 After passing through modality-specific layers, representations are refined using a shared global self-attention mechanism that captures cross-modal dependencies.
 
-1. **Global Multi-Head Attention**:  
+1. **Global Multi-Head Attention**
+
    Operating on the modality-specific outputs \( X''^{(m)} \), the global attention is applied as follows:
 
    $$
-   \begin{aligned}
-   \hat{X}^{(m)} &= X''^{(m)} + \text{GlobalMultiHead}\left( \text{LayerNorm}(X''^{(m)}) \right),
-   \end{aligned}
+   \hat{X}^{(m)} = X''^{(m)} + \text{GlobalMultiHead}\left( \text{LayerNorm}(X''^{(m)}) \right),
    $$
 
    where the global attention mechanism uses shared projection matrices across modalities: \( W_Q^{\text{global}}, W_K^{\text{global}}, W_V^{\text{global}} \), and \( W_O^{\text{global}} \).
@@ -136,13 +139,13 @@ After passing through modality-specific layers, representations are refined usin
 
 For each modality \( m \), the forward pass proceeds as follows:
 
-1. **Input Embeddings**:
+1. **Input Embeddings**
 
    $$
    X^{(m)} = \text{Input}^{(m)} + E_{\text{mod}}^{(m)} + E_{\text{pos}}.
    $$
 
-2. **Modality-Specific Layers**:
+2. **Modality-Specific Layers**
 
    For each layer \( l = 1, \dots, L \):
 
@@ -153,29 +156,65 @@ For each modality \( m \), the forward pass proceeds as follows:
    \end{aligned}
    $$
 
-3. **Global Attention Layer**:
+3. **Global Attention Layer**
 
    $$
    \hat{X}^{(m)} = X_L^{(m)} + \text{GlobalMultiHead}\left( \text{LayerNorm}(X_L^{(m)}) \right).
    $$
 
-4. **Output**:  
+4. **Output**
+
    The final output \( \hat{X}^{(m)} \) represents the processed sequence for modality \( m \), capturing both modality-specific and cross-modal information.
 
 ---
 
-### Notes on Mathematical Formatting:
+### Verification of Mathematical Formatting
 
-- **Display Math**: All major equations and multi-line formulas are enclosed within `$$` to ensure they are displayed prominently and centered in Markdown viewers that support LaTeX.
-  
-- **Inline Math**: For simpler expressions within sentences, single `$` symbols are used.
+To ensure that all mathematical expressions render correctly in Markdown, here's a summary of the formatting practices applied:
 
-- **Alignment**: The `aligned` environment is used within `$$` to properly align multi-line equations.
+1. **Display Math (`$$ ... $$`)**: Used for standalone equations and multi-line expressions to ensure they are centered and prominently displayed.
 
-- **Consistency**: Ensured consistent use of LaTeX commands and notation throughout the document for clarity and readability.
+2. **Inline Math (`$ ... $`)**: Used for equations embedded within text sentences.
 
-### Rendering Tips:
+3. **Aligned Environments**: Utilized within display math blocks to align multi-line equations for better readability.
 
-- **Markdown Renderer**: Ensure that the Markdown renderer you are using supports LaTeX. Platforms like GitHub, GitLab, and many documentation tools (e.g., Jupyter Notebooks, MkDocs with appropriate plugins) support LaTeX rendering.
+4. **Consistent Notation**: Ensured uniform use of symbols and LaTeX commands throughout the document.
 
-- **Escaping Characters**: If any issues arise with special characters, consider escaping them or using raw LaTeX blocks.
+### Rendering Tips
+
+- **Markdown Renderer Compatibility**: Ensure that your Markdown renderer supports LaTeX. Platforms like GitHub, GitLab, and documentation tools such as Jupyter Notebooks, MkDocs (with appropriate plugins), and others typically support LaTeX rendering.
+
+- **Previewing Locally**: If you're using a local Markdown editor, verify that it supports LaTeX. Editors like Typora, Visual Studio Code (with extensions), or Obsidian are excellent choices.
+
+- **Escaping Special Characters**: In rare cases where special characters cause rendering issues, consider escaping them using backslashes (`\`) or revising the LaTeX code.
+
+- **Testing Individual Equations**: To isolate rendering issues, you can test individual equations in a Markdown previewer to ensure they display as intended.
+
+### Example Rendered Equations
+
+Here are a few examples of how the equations should appear when properly rendered:
+
+**Linear Projections:**
+
+$$
+\begin{aligned}
+Q^{(m)} &= X^{(m)} W_Q^{(m)}, \\
+K^{(m)} &= X^{(m)} W_K^{(m)}, \\
+V^{(m)} &= X^{(m)} W_V^{(m)},
+\end{aligned}
+$$
+
+**Scaled Dot-Product Attention:**
+
+$$
+\text{Attention}(Q^{(m)}, K^{(m)}, V^{(m)}) = \text{softmax}\left( \frac{Q^{(m)} {K^{(m)}}^\top}{\sqrt{d_k}} \right) V^{(m)},
+$$
+
+**Positional Encoding:**
+
+$$
+\begin{aligned}
+E_{\text{pos}}(pos, 2i) &= \sin\left( \frac{pos}{10000^{2i/d_{\text{model}}}} \right), \\
+E_{\text{pos}}(pos, 2i+1) &= \cos\left( \frac{pos}{10000^{2i/d_{\text{model}}}} \right),
+\end{aligned}
+$$
