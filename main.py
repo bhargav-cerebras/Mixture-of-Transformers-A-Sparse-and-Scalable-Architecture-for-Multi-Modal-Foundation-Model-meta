@@ -34,7 +34,7 @@ class PositionalEncoding(nn.Module):
         div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
         pe[:, 0::2] = torch.sin(position * div_term)
         pe[:, 1::2] = torch.cos(position * div_term)
-        pe = pe.unsqueeze(0)
+        pe = pe.unsqueeze(0)  # Shape: (1, max_seq_length, d_model)
         self.register_buffer('pe', pe)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -43,7 +43,7 @@ class PositionalEncoding(nn.Module):
             raise ValueError(
                 f"Sequence length {seq_length} exceeds maximum sequence length {self.pe.size(1)}."
             )
-        return x + self.pe[:, :seq_length, :].to(x.device)
+        return x + self.pe[:, :seq_length, :]
 
 
 class FeedForward(nn.Module):
@@ -87,7 +87,7 @@ class ModalitySpecificTransformerLayer(nn.Module):
         self.config = config
         self.modalities = config.modalities
 
-        self.attn_layers: nn.ModuleDict[str, nn.MultiheadAttention] = nn.ModuleDict({
+        self.attn_layers: nn.ModuleDict = nn.ModuleDict({
             modality: nn.MultiheadAttention(
                 embed_dim=config.d_model,
                 num_heads=config.num_heads,
@@ -96,7 +96,7 @@ class ModalitySpecificTransformerLayer(nn.Module):
             ) for modality in self.modalities
         })
 
-        self.ffn_layers: nn.ModuleDict[str, FeedForward] = nn.ModuleDict({
+        self.ffn_layers: nn.ModuleDict = nn.ModuleDict({
             modality: FeedForward(
                 d_model=config.d_model,
                 ffn_hidden_dim=config.ffn_hidden_dim,
@@ -104,11 +104,11 @@ class ModalitySpecificTransformerLayer(nn.Module):
             ) for modality in self.modalities
         })
 
-        self.norm1: nn.ModuleDict[str, nn.LayerNorm] = nn.ModuleDict({
+        self.norm1: nn.ModuleDict = nn.ModuleDict({
             modality: nn.LayerNorm(config.d_model, eps=config.layernorm_eps)
             for modality in self.modalities
         })
-        self.norm2: nn.ModuleDict[str, nn.LayerNorm] = nn.ModuleDict({
+        self.norm2: nn.ModuleDict = nn.ModuleDict({
             modality: nn.LayerNorm(config.d_model, eps=config.layernorm_eps)
             for modality in self.modalities
         })
@@ -196,8 +196,8 @@ class MixtureOfTransformers(nn.Module):
         device = x.device
 
         modality_idx = torch.full((batch_size,), self.modality_to_index[modality], dtype=torch.long, device=device)
-        modality_embed = self.modality_embedding(modality_idx).unsqueeze(1)
-        x = x + modality_embed
+        modality_embed = self.modality_embedding(modality_idx).unsqueeze(1)  # Shape: (batch_size, 1, d_model)
+        x = x + modality_embed  # Broadcasting to (batch_size, seq_length, d_model)
 
         x = self.pos_encoding(x)
 
