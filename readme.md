@@ -82,12 +82,12 @@ Layer normalization and residual connections are used for training stability:
 
 1. **Pre-Norm Architecture**
 
-   $$
-   \begin{aligned}
-   X'^{(m)} &= X^{(m)} + \text{MultiHead}\left( \mathrm{LayerNorm}\left( X^{(m)} \right) \right), \\
-   X''^{(m)} &= X'^{(m)} + \text{FFN}\left( \mathrm{LayerNorm}\left( X'^{(m)} \right) \right).
-   \end{aligned}
-   $$
+$$
+\begin{aligned}
+X'^{(m)} &= X^{(m)} + \text{MultiHead}\left( \mathrm{LayerNorm}\left( X^{(m)} \right) \right), \\
+X''^{(m)} &= X'^{(m)} + \text{FFN}\left( \mathrm{LayerNorm}\left( X'^{(m)} \right) \right).
+\end{aligned}
+$$
 
 ### Modality Embeddings and Positional Encoding
 
